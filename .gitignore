@@ -1,0 +1,14 @@
+*.log
+/log/*
+.classpath
+.project
+.settings
+.metadata
+target
+settings.xml
+*.iml
+*.ipr
+*.iws
+.idea
+*.jar
+*.class
