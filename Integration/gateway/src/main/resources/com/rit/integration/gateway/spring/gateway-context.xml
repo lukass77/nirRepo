@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns="http://www.springframework.org/schema/integration"
+             xmlns:context="http://www.springframework.org/schema/context"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd">
+
+
+    <context:component-scan base-package="com.rit.integration.gateway"/>
+
+    <beans:import resource="classpath:com/rit/integration/gateway/spring/mail-context.xml"/>
+
+
+    <channel id="inTransformerChannel">
+    </channel>
+
+
+    <beans:bean id="gateWayProperties"
+                class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+        <beans:property name="ignoreUnresolvablePlaceholders" value="true"/>
+
+
+
+        <beans:property name="locations">
+            <beans:list>
+                <beans:value>classpath:com/rit/integration/gateway/properties/capMessages.properties</beans:value>
+                <beans:value>classpath:com/rit/integration/gateway/properties/environment.properties</beans:value>
+            </beans:list>
+
+        </beans:property>
+    </beans:bean>
+
+
+    <beans:bean id="conversionService"
+                class="org.springframework.format.support.FormattingConversionServiceFactoryBean"
+                depends-on="gateWayProperties">
+        <beans:property name="converters">
+            <beans:set>
+                <beans:ref bean="CenterMindEventToCapAlarmConvertor"/>
+            </beans:set>
+        </beans:property>
+    </beans:bean>
+
+
+    <beans:bean id="CenterMindEventToCapAlarmConvertor"
+                class="com.rit.integration.gateway.convertors.CenterMindEventToCapAlarmConvertor">
+        <beans:constructor-arg index="0" value="${alarm.message.startbit}"/>
+        <beans:constructor-arg index="1" value="${alarm.message.reservedByte}"/>
+        <beans:constructor-arg index="2" value="${gateway.subsystemCode}"/>
+    </beans:bean>
+
+
+    <!--<beans:bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+        <beans:property name="cacheManager" ref="ehcache"/>
+    </beans:bean>-->
+
+
+    <beans:bean id="cacheManager" class="org.springframework.cache.concurrent.ConcurrentMapCacheManager">
+        <beans:constructor-arg index="0" value="eventsCache"/>
+        <beans:property name="allowNullValues" value="false"/>
+    </beans:bean>
+
+
+    <!-- handle mail messages from centermins to inTransformerChannel-->
+    <!--  <service-activator input-channel="receiveChannel" output-channel="inTransformerChannel"
+                         method="handleMailMessage" ref="consumer">
+      </service-activator>-->
+
+
+    <!--<beans:bean id="ehcache" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <beans:property name="configLocation" value="classpath:config/ehcache.xml"/>
+        <beans:property name="shared" value="true"/>
+    </beans:bean>-->
+
+
+</beans:beans>

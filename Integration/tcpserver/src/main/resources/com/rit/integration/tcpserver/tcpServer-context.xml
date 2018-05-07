@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns="http://www.springframework.org/schema/integration"
+             xmlns:int-ip="http://www.springframework.org/schema/integration/ip"
+             xmlns:context="http://www.springframework.org/schema/context"
+             xmlns:task="http://www.springframework.org/schema/task"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/integration/ip http://www.springframework.org/schema/integration/ip/spring-integration-ip.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+
+    <!-- Server side -->
+
+    <context:component-scan base-package="com.rit.integration.tcpserver"/>
+
+
+
+
+    <beans:bean id="serverProperties"
+                class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer" depends-on="gateWayProperties">
+        <beans:property name="ignoreUnresolvablePlaceholders" value="false"/>
+
+        <beans:property name="locations">
+            <beans:list>
+                <beans:value>classpath:com/rit/integration/tcpserver/properties/server.properties</beans:value>
+            </beans:list>
+
+        </beans:property>
+    </beans:bean>
+
+
+
+    <!--   <beans:bean id="javaSerializer"
+             class="org.springframework.core.serializer.DefaultSerializer"/>-->
+
+    <!-- <beans:bean id="javaDeserializer"
+           class="org.springframework.integration.ip.tcp.serializer.ByteArrayLfSerializer"/>
+           com.rit.integration.tcpserver.si.CustomSerialized
+           org.springframework.integration.ip.tcp.serializer.ByteArrayRawSerializer
+ -->
+
+
+    <beans:bean id="javaDeserializer"
+                class="com.rit.integration.tcpserver.services.TcpServerByteArraySerializer"/>
+
+
+    <!--so-keep-alive="" so-timeout=""-->
+
+    <int-ip:tcp-connection-factory id="server"
+                                   type="server"
+                                   port="${tcpserver.port}"
+                                   host="${tcpserver.host}"
+                                   single-use="false"
+                                   deserializer="javaDeserializer"
+                                   serializer="javaDeserializer"
+                                   so-timeout="0"
+                                   using-nio="false"
+                                   so-keep-alive="false"/>
+
+
+
+
+    <int-ip:tcp-inbound-channel-adapter id="inboundServer"
+                                        channel="inChannel"
+                                        connection-factory="server" client-mode="false"/>
+
+    <int-ip:tcp-outbound-channel-adapter id="outboundServer"
+                                         channel="outChannel"
+                                         connection-factory="server" client-mode="false"/>
+
+
+
+    <!-- handle push events from server to client -->
+
+    <service-activator id="pushMessageTransformer" input-channel="inTransformerChannel" method="transform"
+                       output-channel="outChannel" ref="pushHandlelr">
+
+        <!--<request-handler-advice-chain ></request-handler-advice-chain>-->
+    </service-activator>
+
+
+    <!--&lt;!&ndash; handle incomming mails &ndash;&gt;
+    <service-activator id="pushMessageTransformer" input-channel="inTransformerChannel" method="transformMail"
+                       output-channel="outChannel" ref="pushHandlelr">
+
+        &lt;!&ndash;<request-handler-advice-chain ></request-handler-advice-chain>&ndash;&gt;
+    </service-activator>-->
+
+    <beans:bean id="pushHandlelr" class="com.rit.integration.tcpserver.services.TransforSystemEventToByteArray"/>
+
+
+
+    <!-- handle requests from CAP  KEEP ALIVE AND/ ACK messages -->
+    <service-activator input-channel="inChannel" output-channel="outChannel"
+                       method="handleKeepAlive">
+        <beans:bean id="keepAliveService" class="com.rit.integration.tcpserver.services.TcpFrontController"/>
+    </service-activator>
+
+    <!--<payload-serializing-transformer input-channel="inTransformerChannel" output-channel="outChannel">
+
+    </payload-serializing-transformer>-->
+
+
+    <channel id="inChannel"/>
+
+    <channel id="outChannel">
+        <interceptors>
+            <beans:bean class="com.rit.integration.tcpserver.services.PushMessageInterceptor"/>
+        </interceptors>
+    </channel>
+
+
+    <!-- cache puller setting -->
+    <task:scheduled-tasks scheduler="tcpServerScheduler">
+        <task:scheduled ref="CachePollerTask" method="reSendPushEventMessages" fixed-delay="${tcpserver.cachePuller.fixed-delay}" initial-delay="30000" />
+    </task:scheduled-tasks>
+
+    <beans:bean id="CachePollerTask" class="com.rit.integration.tcpserver.services.CachePollerTask"/>
+
+    <task:scheduler id="tcpServerScheduler" pool-size="10"/>
+
+
+
+</beans:beans>

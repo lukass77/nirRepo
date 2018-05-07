@@ -1,0 +1,52 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xsi:schemaLocation="http://www.springframework.org/schema/rabbit
+           http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+           http://www.springframework.org/schema/integration/amqp
+           http://www.springframework.org/schema/integration/amqp/spring-integration-amqp.xsd
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <context:component-scan base-package="com.rit.integration.gateway"/>
+
+    <import resource="classpath:com/rit/integration/gateway/spring/rabbitmq-common-context.xml"/>
+    <bean class="com.rit.integration.gateway.config.ConvertorConfig"/>
+
+
+    <!--
+    old version - directly with rabbit mq  , consumer setting - dont delete
+
+    <rabbit:listener-container connection-factory="connectionFactory" message-converter="eventMessageConverter"
+                               auto-startup="${rabbitmq.auto.startup}">
+        <rabbit:listener id="eventConsumer" ref="consumer" queue-names="${rabbitmq.centerMindQueName}"
+                         method="handleMessage"/>
+    </rabbit:listener-container>
+
+     <bean id="consumer" class="com.rit.integration.gateway.service.SystemEventConsumer"/>
+    -->
+
+
+
+    <int-amqp:inbound-channel-adapter channel="fromCMQueue" message-converter="eventMessageConverter"
+                                      queue-names="${rabbitmq.centerMindQueName}" connection-factory="connectionFactory" auto-startup="${rabbitmq.auto.startup}"/>
+
+
+    <!-- currently pass all messages from queue to inTransformerChannel -->
+    <int:filter input-channel="fromCMQueue" output-channel="inTransformerChannel" expression="true"/>
+
+
+    <int:channel id="fromCMQueue">
+
+    </int:channel>
+
+
+</beans>
+
+

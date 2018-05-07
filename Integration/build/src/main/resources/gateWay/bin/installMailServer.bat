@@ -1,0 +1,1 @@
+..\james-2.3.0\bin\wrapper.exe -i ..\conf\wrapper.conf

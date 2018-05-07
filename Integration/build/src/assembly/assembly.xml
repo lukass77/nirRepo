@@ -1,0 +1,36 @@
+<assembly>
+	<id>gateWay-zip</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+
+	<includeBaseDirectory>false</includeBaseDirectory>
+
+	<dependencySets>
+
+		<!-- Create common lib's folder, based on center-setup without center-web -->
+		<dependencySet>
+			<outputDirectory>/gateWay</outputDirectory>
+            <includes>
+                <include>com.rit.integration:tcpserver</include>
+            </includes>
+			<!--<useTransitiveDependencies>true</useTransitiveDependencies>-->
+		</dependencySet>
+
+
+	</dependencySets>
+
+	<fileSets>
+
+		<fileSet>
+			<directory>${resources.home}/gateWay</directory>
+			<outputDirectory>/gateWay</outputDirectory>
+			<includes>
+				<include>**/*</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+
+
+
+</assembly>

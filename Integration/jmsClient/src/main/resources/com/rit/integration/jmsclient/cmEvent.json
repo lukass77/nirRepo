@@ -1,0 +1,8 @@
+{
+  "id": 1234,
+  "eventType": "UnPluged",
+  "time": 1449127467902,
+  "content": "port is unpluged",
+  "device": "Cisco switch",
+  "portId": "16"
+}
