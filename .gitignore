@@ -1,6 +1,7 @@
 *.log
 /log/*
 /target
+/.idea
 .classpath
 .project
 .settings
@@ -11,3 +12,4 @@
 *.zip
 *.tar.gz
 *.rar
+*.idea
