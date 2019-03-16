@@ -3,10 +3,7 @@ package com.eci.nir.targil2.config;
 
 import com.eci.nir.targil2.model.PaymentType;
 import com.eci.nir.targil2.service.MessageConsumer;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
@@ -17,9 +14,11 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationConfig {
 
 
+    //move to application
     public static final String topicExchangeName = "main-exchange";
 
     public  static final String cashQueueName = PaymentType.CASH.name()+"-queue";
+    public  static final String creditQueueName = PaymentType.CREDIT.name()+"-queue";
 
     @Bean
     Queue queue() {
@@ -27,13 +26,25 @@ public class ApplicationConfig {
     }
 
     @Bean
-    TopicExchange exchange() {
-        return new TopicExchange(topicExchangeName);
+    Queue queue1() {
+        return new Queue(creditQueueName, false);
     }
 
     @Bean
-    Binding binding(Queue queue, TopicExchange exchange) {
+    DirectExchange exchange() {
+        return new DirectExchange(topicExchangeName);
+    }
+
+    //cash binding
+    @Bean
+    Binding bindingCashQueue(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(PaymentType.CASH.name());
+    }
+
+    //credit binding
+    @Bean
+    Binding bindingCreditQueue(Queue queue1, DirectExchange exchange) {
+        return BindingBuilder.bind(queue1).to(exchange).with(PaymentType.CREDIT.name());
     }
 
     //delegate

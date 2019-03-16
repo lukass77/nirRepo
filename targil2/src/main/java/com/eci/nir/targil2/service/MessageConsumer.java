@@ -22,12 +22,12 @@ public class MessageConsumer {
 
     public void handleMessage(String message) {
         LOGGER.info("receive message -- message content:: "+message);
-        try {
+      /*  try {
             Payment payment = objectMapper.readValue(message, Payment.class);
             LOGGER.info(payment.toString());
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
     }
 }
