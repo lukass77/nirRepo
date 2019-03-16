@@ -1,6 +1,7 @@
 package com.eci.nir.targil2.config;
 
 
+import com.eci.nir.targil2.model.PaymentType;
 import com.eci.nir.targil2.service.MessageConsumer;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -18,11 +19,11 @@ public class ApplicationConfig {
 
     public static final String topicExchangeName = "main-exchange";
 
-    public  static final String queueName = "payment-queue";
+    public  static final String cashQueueName = PaymentType.CASH.name()+"-queue";
 
     @Bean
     Queue queue() {
-        return new Queue(queueName, false);
+        return new Queue(cashQueueName, false);
     }
 
     @Bean
@@ -32,7 +33,7 @@ public class ApplicationConfig {
 
     @Bean
     Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with("payment");
+        return BindingBuilder.bind(queue).to(exchange).with(PaymentType.CASH.name());
     }
 
     @Bean
@@ -40,7 +41,7 @@ public class ApplicationConfig {
                                              MessageListenerAdapter listenerAdapter) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.setQueueNames(queueName);
+        container.setQueueNames(cashQueueName);
         container.setMessageListener(listenerAdapter);
         return container;
     }

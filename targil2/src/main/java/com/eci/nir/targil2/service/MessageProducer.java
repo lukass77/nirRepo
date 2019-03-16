@@ -1,6 +1,7 @@
 package com.eci.nir.targil2.service;
 
 import com.eci.nir.targil2.config.ApplicationConfig;
+import com.eci.nir.targil2.model.PaymentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -25,7 +26,7 @@ public class MessageProducer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         LOGGER.info("Sending message...");
-        rabbitTemplate.convertAndSend(ApplicationConfig.topicExchangeName, "payment", "Hello from RabbitMQ!");
+        rabbitTemplate.convertAndSend(ApplicationConfig.topicExchangeName, PaymentType.CASH.name(), "Hello from RabbitMQ!");
        // receiver.getLatch().await(10000, TimeUnit.MILLISECONDS);
     }
 }
