@@ -36,6 +36,12 @@ public class ApplicationConfig {
         return BindingBuilder.bind(queue).to(exchange).with(PaymentType.CASH.name());
     }
 
+    //delegate
+    @Bean
+    MessageListenerAdapter listenerAdapter(MessageConsumer messageConsumer) {
+        return new MessageListenerAdapter(messageConsumer, "handleMessage");
+    }
+
     @Bean
     SimpleMessageListenerContainer container(ConnectionFactory connectionFactory,
                                              MessageListenerAdapter listenerAdapter) {
@@ -44,10 +50,5 @@ public class ApplicationConfig {
         container.setQueueNames(cashQueueName);
         container.setMessageListener(listenerAdapter);
         return container;
-    }
-
-    @Bean
-    MessageListenerAdapter listenerAdapter(MessageConsumer messageConsumer) {
-        return new MessageListenerAdapter(messageConsumer, "handleMessage");
     }
 }

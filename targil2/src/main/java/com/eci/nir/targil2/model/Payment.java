@@ -43,4 +43,14 @@ public class Payment {
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
+
+    @Override
+    public String toString() {
+        return "Payment{" +
+                "paymentType=" + paymentType +
+                ", amount='" + amount + '\'' +
+                ", date=" + date +
+                ", transactionId='" + transactionId + '\'' +
+                '}';
+    }
 }
